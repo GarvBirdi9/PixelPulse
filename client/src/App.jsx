@@ -2,8 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { io } from 'socket.io-client';
 
 const GRID_SIZE = 20;
-
-// Production URL from Render
 const BACKEND_URL = 'https://pixelpulse-n7g5.onrender.com';
 
 const ADJECTIVES = ['Neon', 'Cyber', 'Pixel', 'Turbo', 'Digital', 'Hyper', 'Mega', 'Sonic', 'Flash', 'Zen'];
@@ -23,7 +21,6 @@ function App() {
   const [hoveredBlock, setHoveredBlock] = useState(null);
 
   useEffect(() => {
-    // UPDATED to use the live Render URL
     const newSocket = io(BACKEND_URL);
     setSocket(newSocket);
 
@@ -33,10 +30,7 @@ function App() {
 
     newSocket.on('block_updated', (data) => {
       const { block, actionType } = data;
-      
-      setGrid((prevGrid) => 
-        prevGrid.map(b => b.id === block.id ? block : b)
-      );
+      setGrid((prevGrid) => prevGrid.map(b => b.id === block.id ? block : b));
       
       const x = block.id % GRID_SIZE;
       const y = Math.floor(block.id / GRID_SIZE);
@@ -47,10 +41,9 @@ function App() {
           user: block.lastClaimedBy, 
           color: actionType === 'release' ? '#52525b' : block.color,
           coords: `(${x}, ${y})`,
-          action: actionType,
-          time: new Date().toLocaleTimeString()
+          action: actionType
         },
-        ...prev.slice(0, 7)
+        ...prev.slice(0, 5)
       ]);
     });
 
@@ -83,9 +76,9 @@ function App() {
   }, [grid]);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 p-2 md:p-4 flex flex-col items-center font-sans selection:bg-emerald-500/30">
-      <header className="mb-4 md:mb-6 text-center pt-2">
-        <div className="inline-block px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[9px] font-bold tracking-[0.2em] uppercase mb-2">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 p-4 md:p-6 flex flex-col items-center font-sans selection:bg-emerald-500/30 overflow-x-hidden">
+      <header className="mb-8 md:mb-10 text-center pt-2">
+        <div className="inline-block px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[9px] font-bold tracking-[0.2em] uppercase mb-3">
           Live Multiplayer Grid
         </div>
         <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white mb-1">
@@ -97,49 +90,41 @@ function App() {
       </header>
 
       <main className="flex flex-col lg:flex-row gap-6 items-start justify-center w-full max-w-7xl">
-        {/* Left Side */}
-        <div className="flex flex-col gap-4 w-full lg:w-64">
-          <div className="bg-zinc-900/60 border border-white/5 p-6 rounded-[2rem] shadow-xl">
+        {/* Left Column */}
+        <div className="flex flex-col sm:flex-row lg:flex-col gap-4 w-full lg:w-64 shrink-0">
+          <div className="flex-1 bg-zinc-900/60 border border-white/5 p-6 rounded-[2rem] shadow-xl">
             <h2 className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest mb-4">You</h2>
             <div className="flex items-center gap-3">
-              <div 
-                className="w-10 h-10 rounded-xl shadow-lg border border-white/10"
-                style={{ backgroundColor: user.color }}
-              />
+              <div className="w-10 h-10 rounded-xl shadow-lg border border-white/10 shrink-0" style={{ backgroundColor: user.color }} />
               <div className="min-w-0">
                 <div className="text-base font-bold text-white truncate leading-none">{user.name}</div>
-                <div className="text-[9px] text-zinc-500 font-mono mt-1">COLOR ACTIVE</div>
+                <div className="text-[9px] text-zinc-500 font-mono mt-1">ACTIVE</div>
               </div>
             </div>
           </div>
 
-          <div className="bg-zinc-900/60 border border-white/5 p-6 rounded-[2rem] shadow-xl min-h-[300px]">
+          <div className="flex-1 bg-zinc-900/60 border border-white/5 p-6 rounded-[2rem] shadow-xl min-h-[240px]">
             <h2 className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest mb-4">Pulse Feed</h2>
             <div className="space-y-4">
               {activity.map((item) => (
-                <div key={item.id} className="flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-500">
-                  <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: item.color }} />
+                <div key={item.id} className="flex items-start gap-3">
+                  <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: item.color }} />
                   <div className="flex-1 text-[11px] leading-tight">
                     <span className="font-bold text-zinc-100">{item.user}</span>
                     <br />
-                    <span className={item.action === 'release' ? 'text-zinc-600' : 'text-zinc-500'}>
-                      {item.action === 'release' ? 'released' : 'acquired'} block <span className="text-zinc-300 font-mono">{item.coords}</span>
-                    </span>
+                    <span className="text-zinc-500">{item.action} block {item.coords}</span>
                   </div>
                 </div>
               ))}
-              {activity.length === 0 && (
-                <p className="text-zinc-700 text-[10px] italic">Waiting for incoming pulses...</p>
-              )}
             </div>
           </div>
         </div>
 
         {/* The Main Board */}
-        <div className="flex-1 flex flex-col items-center">
-          <div className="relative p-2 bg-zinc-900/80 border border-white/5 rounded-[2rem] shadow-2xl">
+        <div className="flex-1 flex flex-col items-center w-full min-w-0">
+          <div className="relative p-4 md:p-6 bg-zinc-900/80 border border-white/5 rounded-[2.5rem] shadow-2xl">
             <div 
-              className="grid gap-1 md:gap-1.5"
+              className="grid gap-1 md:gap-1.5 mx-auto"
               style={{ 
                 gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
                 width: 'fit-content'
@@ -151,7 +136,7 @@ function App() {
                   onClick={() => handleBlockClick(block.id)}
                   onMouseEnter={() => setHoveredBlock(block)}
                   onMouseLeave={() => setHoveredBlock(null)}
-                  className="w-4 h-4 md:w-8 md:h-8 rounded-[4px] cursor-pointer transition-all duration-300 hover:scale-125 hover:z-[100] hover:rounded-lg hover:shadow-lg active:scale-90"
+                  className="w-3 h-3 sm:w-5 sm:h-5 md:w-8 md:h-8 rounded-[2px] sm:rounded-[4px] cursor-pointer transition-all duration-300 hover:scale-125 hover:z-[100] hover:rounded-sm active:scale-90"
                   style={{ 
                     backgroundColor: block.color,
                     boxShadow: block.ownerId ? `0 0 10px ${block.color}44` : 'none',
@@ -168,8 +153,8 @@ function App() {
           </div>
         </div>
 
-        {/* Right Side: Leaderboard */}
-        <div className="flex flex-col gap-4 w-full lg:w-64">
+        {/* Right Column: Leaderboard */}
+        <div className="flex flex-col gap-4 w-full lg:w-64 shrink-0">
           <div className="bg-zinc-900/60 border border-white/5 p-6 rounded-[2rem] shadow-xl">
             <h2 className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest mb-6">Leaderboard</h2>
             <div className="space-y-5">
@@ -180,28 +165,25 @@ function App() {
                   <div className="flex-1 min-w-0">
                     <div className="text-[11px] font-bold text-zinc-200 truncate leading-none">{name}</div>
                     <div className="text-[9px] text-zinc-500 font-bold uppercase mt-1">
-                      Acquired: {data.count}
+                      {data.count} Pixels
                     </div>
                   </div>
                 </div>
               ))}
-              {leaderboard.length === 0 && (
-                <p className="text-zinc-700 text-[10px] italic">No territory claimed yet.</p>
-              )}
             </div>
           </div>
         </div>
       </main>
 
-      {/* Simplified Tooltip */}
+      {/* Tooltip */}
       {hoveredBlock && hoveredBlock.lastClaimedBy && (
-        <div className="fixed bottom-6 px-4 py-2 bg-zinc-100 text-black rounded-xl shadow-2xl font-black text-[10px] uppercase tracking-widest animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div className="fixed bottom-6 px-4 py-2 bg-zinc-100 text-black rounded-xl shadow-2xl font-black text-[10px] uppercase tracking-widest z-[200]">
           Captured by {hoveredBlock.lastClaimedBy}
         </div>
       )}
 
       <footer className="mt-12 mb-8 text-zinc-800 text-[8px] font-bold uppercase tracking-[0.5em]">
-        Assessment Project v1.2.0
+        Production v1.2.0
       </footer>
     </div>
   );
