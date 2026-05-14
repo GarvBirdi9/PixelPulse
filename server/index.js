@@ -9,40 +9,52 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", // Vite default port
+    origin: "*", // Allow all origins for the live demo
     methods: ["GET", "POST"]
   }
 });
 
-// Grid size 20x20 = 400 blocks
 const GRID_SIZE = 20;
 let grid = Array(GRID_SIZE * GRID_SIZE).fill(null).map((_, index) => ({
   id: index,
   ownerId: null,
-  color: '#27272a', // zinc-800
+  color: '#27272a',
   lastClaimedBy: null
 }));
 
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
-
-  // Send the current grid state to the new user
   socket.emit('init_grid', grid);
 
   socket.on('claim_block', (data) => {
     const { blockId, color, userName } = data;
     
-    // Simple validation
     if (blockId >= 0 && blockId < grid.length) {
-      grid[blockId] = {
-        ...grid[blockId],
-        ownerId: socket.id,
-        color: color,
-        lastClaimedBy: userName
-      };
+      const currentBlock = grid[blockId];
+      let actionType = 'claim';
 
-      // Broadcast the update to everyone (including the sender)
-      io.emit('block_updated', grid[blockId]);
+      if (currentBlock.ownerId === socket.id) {
+        grid[blockId] = {
+          id: blockId,
+          ownerId: null,
+          color: '#27272a',
+          lastClaimedBy: userName
+        };
+        actionType = 'release';
+      } else {
+        grid[blockId] = {
+          ...currentBlock,
+          ownerId: socket.id,
+          color: color,
+          lastClaimedBy: userName
+        };
+        actionType = 'claim';
+      }
+
+      io.emit('block_updated', { 
+        block: grid[blockId], 
+        actionType: actionType 
+      });
     }
   });
 
