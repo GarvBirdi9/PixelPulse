@@ -122,12 +122,11 @@ function App() {
 
         {/* The Main Board */}
         <div className="flex-1 flex flex-col items-center w-full min-w-0">
-          <div className="relative p-4 md:p-6 bg-zinc-900/80 border border-white/5 rounded-[2.5rem] shadow-2xl">
+          <div className="relative p-3 sm:p-4 md:p-6 bg-zinc-900/80 border border-white/5 rounded-2xl md:rounded-[2.5rem] shadow-2xl w-full max-w-[95vw] md:max-w-2xl">
             <div 
-              className="grid gap-1 md:gap-1.5 mx-auto"
+              className="grid gap-[1px] sm:gap-1 md:gap-1.5 mx-auto w-full"
               style={{ 
-                gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
-                width: 'fit-content'
+                gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`
               }}
             >
               {grid.map((block) => (
@@ -136,7 +135,7 @@ function App() {
                   onClick={() => handleBlockClick(block.id)}
                   onMouseEnter={() => setHoveredBlock(block)}
                   onMouseLeave={() => setHoveredBlock(null)}
-                  className="w-3 h-3 sm:w-5 sm:h-5 md:w-8 md:h-8 rounded-[2px] sm:rounded-[4px] cursor-pointer transition-all duration-300 hover:scale-125 hover:z-[100] hover:rounded-sm active:scale-90"
+                  className="aspect-square w-full rounded-[1px] sm:rounded-[2px] md:rounded-[4px] cursor-pointer transition-all duration-300 hover:scale-[1.3] hover:z-[100] hover:rounded-sm active:scale-90"
                   style={{ 
                     backgroundColor: block.color,
                     boxShadow: block.ownerId ? `0 0 10px ${block.color}44` : 'none',
